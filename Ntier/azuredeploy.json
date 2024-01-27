@@ -26,7 +26,7 @@
 
                         "name": "app",
                         "properties": {
-                            "addressPrefix": "10.10.1.0/14"
+                            "addressPrefix": "10.10.1.0/24"
                         }
                     },
                     {
