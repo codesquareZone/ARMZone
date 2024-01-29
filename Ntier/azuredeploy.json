@@ -27,6 +27,47 @@
             },
 
             "defaultValue": ["web","app","db"]
+        },
+
+        "appnsginfo": {
+            "type": "object",
+            "metadata": {
+                "description": "This is appnsg security rules"
+            },
+
+            "defaultValue": {
+                "name": "appnsg",
+
+                "securityRules": [
+                {
+                    "name": "openhttps",
+                    "access": "Allow",
+                    "description": "Open https port",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "443",
+                    "direction": "Inbound",
+                    "priority": "300",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*"   
+                },
+
+                 {
+                    "name": "openssh",
+                    "access": "Allow",
+                    "description": "Open ssh port",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "22",
+                    "direction": "Inbound",
+                    "priority": "310",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*"
+                }
+
+                ]
+            
+            }
         }
     },
 
@@ -124,12 +165,49 @@
 
 
                     }
-                }
+                 }
             ]
           }
             
+        },
+        
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "name": "appnsg",
+            "location": "[resourceGroup().location]",
+            "properties": {}
+        },
+
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules", 
+            "apiVersion": "2023-04-01",
+            "name": "[format('{0}/{1}',parameters('appnsginfo').name,parameters('appnsginfo').securityRules[copyIndex()].name)]",
+             "properties": {
+                 "access": "[parameters('appnsginfo').securityRules[copyIndex()].access]",
+                 "description": "[parameters('appnsginfo').securityRules[copyIndex()].description]",
+                 "destinationAddressPrefix": "[parameters('appnsginfo').securityRules[copyIndex()].destinationAddressPrefix]",
+                 "destinationPortRange": "[parameters('appnsginfo').securityRules[copyIndex()].destinationPortRange]",
+                 "direction": "[parameters('appnsginfo').securityRules[copyIndex()].direction]",
+                 "priority": "[parameters('appnsginfo').securityRules[copyIndex()].priority]",
+                 "protocol": "[parameters('appnsginfo').securityRules[copyIndex()].protocol]",
+                 "sourceAddressPrefix": "[parameters('appnsginfo').securityRules[copyIndex()].sourceAddressPrefix]",
+                 "sourcePortRange": "[parameters('appnsginfo').securityRules[copyIndex()].sourcePortRange]"
+                 },
+
+         "copy": {
+         "name": "appnsginfocopy",
+         "count": "[length(parameters('appnsginfo').securityRules)]",
+         "mode": "Serial"
+         },        
+
+           "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', 'appnsg')]"]    
         }
+        
+        
      
     ]
 
 }
+
+
