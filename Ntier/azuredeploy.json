@@ -18,9 +18,18 @@
                 "description": "This defines address space of subnets"
             },
             "defaultValue": ["10.10.0.0/24","10.10.1.0/24","10.10.2.0/24"]
+        }, 
+
+        "subnetNames": {
+            "type": "array",
+            "metadata": {
+                "description": "This is subnet names"
+            },
+
+            "defaultValue": ["web","app","db"]
         }
-       
     },
+
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
@@ -42,36 +51,22 @@
        {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2022-09-01",
-            "name": "ntier/web",
+            "name": "[format('ntier/{0}',parameters('subnetNames')[copyIndex()])]",
             "properties": {
-                "addressPrefix": "[parameters('subnetRange')[0]]"
+                "addressPrefix": "[parameters('subnetRange')[copyIndex()]]"
             }, 
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-09-01",
-            "name": "ntier/app",
-            "properties": {
-                "addressPrefix": "[parameters('subnetRange')[1]]"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', 'web')]"
-                ]
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-09-01",
-            "name": "ntier/db",
-            "properties": {
-                "addressPrefix": "[parameters('subnetRange')[2]]"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', 'app')]"
-                ]
+            
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"],
+
+            "copy": {
+                "name": "subnetCopy",
+                "count": "[length(parameters('subnetRange'))]",
+                "mode": "Serial"
+            }
+
         }
 
+        
     ]
+
 }
