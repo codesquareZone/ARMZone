@@ -71,11 +71,15 @@
         }
     },
 
+    "variables": {
+        "networkname": "ntier"
+    },
+
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2023-04-01",
-            "name": "ntier",
+            "name": "[variables('networkname')]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "env": "dev"
@@ -92,12 +96,12 @@
        {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2022-09-01",
-            "name": "[format('ntier/{0}',parameters('subnetNames')[copyIndex()])]",
+            "name": "[format('{0}/{1}',variables('networkname'), parameters('subnetNames')[copyIndex()])]",
             "properties": {
                 "addressPrefix": "[parameters('subnetRange')[copyIndex()]]"
             }, 
             
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"],
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', variables('networkname'))]"],
 
             "copy": {
                 "name": "subnetCopy",
@@ -234,7 +238,7 @@
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses','webip')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier',parameters('subnetNames')[0])]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('networkname'),parameters('subnetNames')[0])]"
                             }
 
                         }
@@ -242,7 +246,7 @@
                 ]
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier',parameters('subnetNames')[0])]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('networkname'),parameters('subnetNames')[0])]",
                 "[resourceId('Microsoft.Network/publicIPAddresses','webip')]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
             ]
