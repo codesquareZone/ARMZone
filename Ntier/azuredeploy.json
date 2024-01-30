@@ -68,12 +68,72 @@
                 ]
             
             }
+        },
+
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of the virtual machine"
+            }
+        },
+        "adminpassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine"
+            }
+        },
+        "adminusername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Machine"
+            }
+        },
+        "vmname": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "ubuntuOSVersion": {
+            "type": "string",
+            "defaultValue": "Ubuntu-2004",
+            "allowedValues": [
+                "Ubuntu-1804",
+                "Ubuntu-2004",
+                "Ubuntu-2204"
+            ],
+            "metadata": {
+                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+            }
         }
     },
 
     "variables": {
-        "networkname": "ntier"
+        "networkname": "ntier",
+        "imageReference": {
+            "Ubuntu-1804": {
+                "publisher": "Canonical",
+                "offer": "UbuntuServer",
+                "sku": "18_04-lts-gen2",
+                "version": "latest"
+            },
+            "Ubuntu-2004": {
+                "publisher": "Canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts-gen2",
+                "version": "latest"
+            },
+            "Ubuntu-2204": {
+                "publisher": "Canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest"
+            }
+        },
+        
+        "osDiskType": "Standard_LRS"
     },
+
 
     "resources": [
         {
@@ -250,8 +310,49 @@
                 "[resourceId('Microsoft.Network/publicIPAddresses','webip')]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
             ]
-        
-        }
+        },
+
+       {
+
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2023-03-01",
+        "name": "[parameters('vmName')]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+            "hardwareProfile": {
+                "vmSize": "[parameters('vmSize')]"
+
+            },
+            "storageProfile": {
+                "osDisk": {
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                        "storageAccountType": "[variables('osDiskType')]"
+                    }
+                },
+                "imageReference": "[variables('imageReference')[parameters('ubuntuOSVersion')]]"
+            },
+            "networkProfile": {
+                "networkInterfaces": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces','webnic')]"
+                    }
+                ]
+            },
+            "osProfile": {
+                "computerName": "[parameters('vmname')]",
+                "adminUsername": "[parameters('adminusername')]",
+                "adminPassword": "[parameters('adminpassword')]",
+                "linuxConfiguration": {
+                    "disablePasswordAuthentication": false
+
+                }
+            }
+          
+        },
+        "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces','webnic')]" ]
+
+       }
     ]
 
 }
