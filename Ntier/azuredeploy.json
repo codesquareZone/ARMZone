@@ -105,6 +105,31 @@
             "metadata": {
                 "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
             }
+        },
+      "sqlserverName": {
+        "type": "string",
+        "metadata": {
+            "description": "The name of the SQL logical server"
+        }
+      },
+        "sqlDBName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the SQL Database"
+            }
+            
+        },
+        "dbusername": {
+            "type": "string",
+            "metadata": {
+                "description": "The administrator username of the SQL DB server"
+            }
+        },
+        "dbpassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The administrator password of the SQL DB server"
+            }
         }
     },
 
@@ -352,7 +377,35 @@
         },
         "dependsOn": [ "[resourceId('Microsoft.Network/networkInterfaces','webnic')]" ]
 
+       },
+       {
+          "type": "Microsoft.Sql/servers",
+          "apiversion": "2022-11-01-preview",
+          "name": "[parameters('sqlserverName')]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "administratorLogin": "[parameters('adminusername')]",
+            "administratorLoginPassword": "[parameters('adminpassword')]",
+            "publicNetworkAccess": "Enabled"
+          }
+
+       },
+       {
+        "type": "Microsoft.Sql/servers/databases",
+        "apiversion": "2022-05-01-preview",
+        "name": "[format('{0}/{1}',parameters('sqlserverName'),parameters('sqlDBName'))]",
+        "location": "[resourceGroup().location]",
+        "sku":{
+            "name": "Basic",
+            "size": "2",
+            "tier": "Basic"
+        },
+        "properties":{
+            
+        },
+        "dependsOn": ["[resourceId('Microsoft.Sql/servers',parameters('sqlserverName'))]"]
        }
+
     ]
 
 }

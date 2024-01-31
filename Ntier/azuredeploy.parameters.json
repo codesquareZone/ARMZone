@@ -62,6 +62,18 @@
         
         "ubuntuOSVersion": {
             "value": "Ubuntu-2004"
+        },
+        "sqlserverName": {
+            "value": "samplesqlservr" 
+        },
+        "sqlDBName": {
+            "value": "SamplesqlDB"
+        },
+        "dbusername": {
+            "value": "dbuser" 
+        },
+        "dbpassword": {
+            "value": "" 
         }
     }
 }
